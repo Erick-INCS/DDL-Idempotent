@@ -1,47 +1,14 @@
 #!/usr/bin/env python3
-from sys import argv
-import re
+import argparse
+from ConvertDDL import convert
 
-argv = argv[1:]
+argparser = argparse.ArgumentParser(description='SQL file with create statements to an SQL Idempotent script.')
+argparser.add_argument('infile', help='Input SQL file.')
+argparser.add_argument('outfile', help='Output SQL file.')
 
-def command_envelope(sql):
-    table_name = re.search(r'.*create +table +(\w+) *\(', sql, re.I)
-    if table_name and table_name.group(1):
-        table_name = table_name.group(1)
-    else:
-        return ''
-
-    return f"""if (not exists(select 1 from rdb$relations where rdb$relation_name = '{table_name}')) then
-    execute statement '{sql}';"""
-
-def envelope(commands):
-
-    if not commands and not len(commands):
-        return
-
-    commands = '\n\n'.join(list(map(command_envelope,commands)))
-
-    return f"""
-    SET TERM !!;
-    EXECUTE block as
-    BEGIN
-
-    {commands}
-
-    END!!
-    SET TERM ; !!"""
-
-def convert(infile, outfile=''):
+def read_and_convert(infile, outfile):
     with open(infile, 'rt') as content:
-        commands = list(filter(
-            lambda l:l,
-            content\
-            .read()\
-            .replace('\n', '')\
-            .replace("''", "''")\
-            .split(';')))
-
-    commands = envelope(commands)
+        commands = convert(content)
 
     if outfile:
         with open(outfile, 'wt') as out:
@@ -49,10 +16,6 @@ def convert(infile, outfile=''):
     else:
         print(commands)
 
-
-if len(argv) not in [1, 2]:
-    print('Syntax: ./convert.py input_file.sql output_file.sql')
-else:
-    convert(*argv)
-
-
+if __name__ == '__main__':
+    args = argparser.parse_args()
+    read_and_convert(args.infile, args.outfile)
