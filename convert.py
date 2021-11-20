@@ -8,7 +8,7 @@ argparser.add_argument('outfile', help='Output SQL file.')
 
 def read_and_convert(infile, outfile):
     with open(infile, 'rt') as content:
-        commands = convert(content)
+        commands = convert(content.read())
 
     if outfile:
         with open(outfile, 'wt') as out:

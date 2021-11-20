@@ -31,7 +31,6 @@ def convert(content):
     commands = list(filter(
         lambda l:l,
         content\
-        .read()\
         .replace('\n', '')\
         .replace("''", "''")\
         .split(';')))
