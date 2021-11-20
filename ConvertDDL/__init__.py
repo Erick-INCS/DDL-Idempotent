@@ -32,7 +32,7 @@ def convert(content):
         lambda l:l,
         content\
         .replace('\n', '')\
-        .replace("''", "''")\
+        .replace("'", "''")\
         .split(';')))
 
     return envelope(commands)
